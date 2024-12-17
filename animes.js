@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 
-const archivoAnimes = 'animes.json';
+const archivoAnimes = 'anime.json';
 
 // Función para obtener todos los animes
 export const obtenerAnimes = async () => {
