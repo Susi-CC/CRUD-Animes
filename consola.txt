@@ -1,4 +1,2 @@
 npm init -y
-npm i express jest
-npm i nodemon
-npm i fs
+npm i nodemon fs
