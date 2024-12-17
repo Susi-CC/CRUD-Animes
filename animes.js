@@ -1,3 +1,4 @@
+// Importando método nativo de Node.JS
 import fs from 'fs/promises';
 
 const archivoAnimes = 'anime.json';
@@ -6,7 +7,7 @@ const archivoAnimes = 'anime.json';
 export const obtenerAnimes = async () => {
     try {
         const data = await fs.readFile(archivoAnimes, 'utf8');
-        return JSON.parse(data); // Convertir el JSON a un objeto
+        return JSON.parse(data); // Convertir JSON a objeto
     } catch (error) {
         console.error('Error al leer el archivo de animes:', error);
         return {}; // Devuelve un objeto vacío si no se puede leer
@@ -15,11 +16,7 @@ export const obtenerAnimes = async () => {
 
 // Función para guardar los datos en el archivo JSON
 const guardarAnimes = async (animesGuardar) => {
-    try {
-        await fs.writeFile(archivoAnimes, JSON.stringify(animesGuardar, null, 2)); // Guardar con formato legible
-    } catch (error) {
-        console.error('Error al guardar los animes:', error);
-    }
+    await fs.writeFile(archivoAnimes, JSON.stringify(animesGuardar, null, 2)); // Escribir con formato legible
 };
 
 // Función para agregar un nuevo anime
@@ -31,59 +28,111 @@ export const crearAnime = async (nombre, genero, año, autor) => {
         throw new Error('Todos los campos (nombre, género, año, autor) son obligatorios');
     }
 
+    const nuevoId = (Math.max(...Object.keys(animes).map(Number)) + 1).toString(); // Generar el próximo ID como string
     const nuevoAnime = {
-        nombre: nombre,
-        genero: genero,
-        año: año,
-        autor: autor,
+        nombre,
+        genero,
+        año,
+        autor,
     };
 
-    // Agregar el nuevo anime al objeto de animes
-    const nuevoId = Object.keys(animes).length + 1; // Determina el próximo ID incremental
     animes[nuevoId] = nuevoAnime;
 
     await guardarAnimes(animes);
     console.log('Anime registrado de manera satisfactoria!!!');
-    return nuevoAnime;
+    return { [nuevoId]: nuevoAnime };
 };
 
-// Función para actualizar un anime existente
-export const actualizarAnime = async (nombre, camposActualizados) => {
+// Función para obtener un anime por ID
+export const obtenerAnimePorId = async (id) => {
     const animes = await obtenerAnimes();
-    const anime = Object.values(animes).find(a => a.nombre === nombre);
 
-    if (anime) {
-        // Valida que solo se actualicen campos válidos
-        const camposPermitidos = ['nombre', 'genero', 'año', 'autor'];
-        for (const campo in camposActualizados) {
-            if (!camposPermitidos.includes(campo)) {
-                throw new Error(`El campo ${campo} no es válido para actualizar`);
-            }
-        }
-
-        // Actualiza solo los campos permitidos
-        Object.assign(anime, camposActualizados);
-        await guardarAnimes(animes);
-        console.log(`El anime ${nombre} se actualizó de manera satisfactoria!!!`);
-        return anime;
-    } else {
-        console.log(`El anime: ${nombre} no existe!!!`);
+    if (!animes[id]) {
+        console.log(`El anime con ID "${id}" no existe.`);
         return null;
     }
+
+    return { [id]: animes[id] };
 };
 
-// Función para eliminar un anime por su nombre
-export const eliminarAnime = async (nombre) => {
+// Función para obtener un anime por nombre
+export const obtenerAnimePorNombre = async (nombre) => {
     const animes = await obtenerAnimes();
-    const clave = Object.keys(animes).find(key => animes[key].nombre === nombre);
 
+    // Buscar el anime por nombre
+    const clave = Object.keys(animes).find(key => animes[key].nombre.toLowerCase() === nombre.toLowerCase());
     if (!clave) {
-        console.log(`El anime ${nombre} no existe.`);
-        return { eliminado: false, mensaje: `El anime ${nombre} no se encontró` };
+        console.log(`El anime con nombre "${nombre}" no existe.`);
+        return null;
     }
 
-    delete animes[clave]; // Elimina el anime del objeto
+    return { [clave]: animes[clave] };
+};
+
+// Función para actualizar un anime por ID
+export const actualizarAnimePorId = async (id, camposActualizados) => {
+    const animes = await obtenerAnimes();
+
+    if (!animes[id]) {
+        console.log(`El anime con ID "${id}" no existe.`);
+        return null;
+    }
+
+    // Actualizar solo los campos proporcionados
+    Object.assign(animes[id], camposActualizados);
     await guardarAnimes(animes);
-    console.log(`El anime ${nombre} se eliminó de manera satisfactoria!!!`);
-    return { eliminado: true, mensaje: `El anime ${nombre} fue eliminado satisfactoriamente` };
+    console.log(`El anime con ID "${id}" se actualizó de manera satisfactoria!!!`);
+    return { [id]: animes[id] };
+};
+
+// Función para actualizar un anime por nombre
+export const actualizarAnimePorNombre = async (nombre, camposActualizados) => {
+    const animes = await obtenerAnimes();
+
+    // Buscar el anime por nombre
+    const clave = Object.keys(animes).find(key => animes[key].nombre.toLowerCase() === nombre.toLowerCase());
+    if (!clave) {
+        console.log(`El anime con nombre "${nombre}" no existe.`);
+        return null;
+    }
+
+    // Actualizar solo los campos proporcionados
+    Object.assign(animes[clave], camposActualizados);
+    await guardarAnimes(animes);
+    console.log(`El anime "${nombre}" se actualizó de manera satisfactoria!!!`);
+    return { [clave]: animes[clave] };
+};
+
+// Función para eliminar un anime por ID
+export const eliminarAnimePorId = async (id) => {
+    const animes = await obtenerAnimes();
+
+    if (!animes[id]) {
+        console.log(`El anime con ID "${id}" no existe.`);
+        return false;
+    }
+
+    // Eliminar el anime del objeto
+    delete animes[id];
+    await guardarAnimes(animes);
+    console.log(`El anime con ID "${id}" se eliminó de manera satisfactoria!!!`);
+    return true;
+};
+
+// Función para eliminar un anime por nombre
+export const eliminarAnimePorNombre = async (nombre) => {
+    const animes = await obtenerAnimes();
+
+    // Buscar el anime por nombre
+    const clave = Object.keys(animes).find(key => animes[key].nombre.toLowerCase() === nombre.toLowerCase());
+    if (!clave) {
+        console.log(`El anime con nombre "${nombre}" no existe.`);
+        return false;
+    }
+
+    // Eliminar el anime del objeto
+    delete animes[clave];
+    await guardarAnimes(animes);
+    console.log(`El anime "${nombre}" se eliminó de manera satisfactoria!!!`);
+    return true;
 };
