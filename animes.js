@@ -6,7 +6,7 @@ const archivoAnimes = 'animes.json';
 export const obtenerAnimes = async () => {
     try {
         const data = await fs.readFile(archivoAnimes, 'utf8');
-        return JSON.parse(data);
+        return JSON.parse(data); // Convertir el JSON a un objeto
     } catch (error) {
         console.error('Error al leer el archivo de animes:', error);
         return {}; // Devuelve un objeto vacío si no se puede leer
@@ -16,7 +16,7 @@ export const obtenerAnimes = async () => {
 // Función para guardar los datos en el archivo JSON
 const guardarAnimes = async (animesGuardar) => {
     try {
-        await fs.writeFile(archivoAnimes, JSON.stringify(animesGuardar, null, 2));
+        await fs.writeFile(archivoAnimes, JSON.stringify(animesGuardar, null, 2)); // Guardar con formato legible
     } catch (error) {
         console.error('Error al guardar los animes:', error);
     }
@@ -50,13 +50,19 @@ export const crearAnime = async (nombre, genero, año, autor) => {
 // Función para actualizar un anime existente
 export const actualizarAnime = async (nombre, camposActualizados) => {
     const animes = await obtenerAnimes();
-    const anime = Object.values(animes).find(a => a.nombre === nombre); // Buscar el anime por nombre
+    const anime = Object.values(animes).find(a => a.nombre === nombre);
 
     if (anime) {
-        // Si el campo completada está en camposActualizados, actualízalo
-        if (camposActualizados.completada !== undefined) {
-            anime.completada = Boolean(camposActualizados.completada);
+        // Valida que solo se actualicen campos válidos
+        const camposPermitidos = ['nombre', 'genero', 'año', 'autor'];
+        for (const campo in camposActualizados) {
+            if (!camposPermitidos.includes(campo)) {
+                throw new Error(`El campo ${campo} no es válido para actualizar`);
+            }
         }
+
+        // Actualiza solo los campos permitidos
+        Object.assign(anime, camposActualizados);
         await guardarAnimes(animes);
         console.log(`El anime ${nombre} se actualizó de manera satisfactoria!!!`);
         return anime;
@@ -69,11 +75,15 @@ export const actualizarAnime = async (nombre, camposActualizados) => {
 // Función para eliminar un anime por su nombre
 export const eliminarAnime = async (nombre) => {
     const animes = await obtenerAnimes();
-    const nuevosAnimes = Object.fromEntries(
-        Object.entries(animes).filter(([key, anime]) => anime.nombre !== nombre)
-    ); // Filtra los animes por nombre
+    const clave = Object.keys(animes).find(key => animes[key].nombre === nombre);
 
-    await guardarAnimes(nuevosAnimes);
+    if (!clave) {
+        console.log(`El anime ${nombre} no existe.`);
+        return { eliminado: false, mensaje: `El anime ${nombre} no se encontró` };
+    }
+
+    delete animes[clave]; // Elimina el anime del objeto
+    await guardarAnimes(animes);
     console.log(`El anime ${nombre} se eliminó de manera satisfactoria!!!`);
-    return true;
+    return { eliminado: true, mensaje: `El anime ${nombre} fue eliminado satisfactoriamente` };
 };

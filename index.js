@@ -1,5 +1,4 @@
 import http from 'http';
-import fs from 'fs/promises';
 import {
     obtenerAnimes,
     crearAnime,
@@ -16,37 +15,40 @@ const server = http.createServer(async (req, res) => {
     try {
         if (url.startsWith('/anime')) {
             const parts = url.split('/');
-            const nombre = decodeURIComponent(parts[2]); // Extrae el nombre y lo decodifica
-            console.log('Nombre del anime extraído de la URL:', nombre); // Verificación
+            const nombre = parts[2] ? decodeURIComponent(parts[2]) : null; // Decodificar solo si existe
 
             switch (method) {
                 case 'POST': // Crear un nuevo anime
-                    if (url === '/anime') {
-                        req.on('data', chunk => (body += chunk.toString()));
-                        req.on('end', async () => {
+                    req.on('data', chunk => (body += chunk.toString()));
+                    req.on('end', async () => {
+                        try {
                             const nuevoAnime = JSON.parse(body);
                             if (!nuevoAnime.nombre || !nuevoAnime.genero || !nuevoAnime.año || !nuevoAnime.autor) {
                                 res.writeHead(400, { 'Content-Type': 'application/json' });
                                 res.end(JSON.stringify({ error: 'Todos los campos son obligatorios' }));
                                 return;
                             }
-                            const animeCreado = await crearAnime(nuevoAnime.nombre, nuevoAnime.genero, nuevoAnime.año, nuevoAnime.autor);
+                            const animeCreado = await crearAnime(
+                                nuevoAnime.nombre,
+                                nuevoAnime.genero,
+                                nuevoAnime.año,
+                                nuevoAnime.autor
+                            );
                             res.writeHead(201, { 'Content-Type': 'application/json' });
                             res.end(JSON.stringify(animeCreado));
-                        });
-                    } else {
-                        res.writeHead(404, { 'Content-Type': 'text/plain' });
-                        res.end('Ruta no encontrada');
-                    }
+                        } catch (error) {
+                            res.writeHead(400, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ error: 'JSON mal formateado' }));
+                        }
+                    });
                     break;
 
                 case 'GET': // Listar todos los animes o buscar uno por nombre
                     const animes = await obtenerAnimes();
                     if (nombre) {
-                        // Busca el anime por nombre
-                        const anime = Object.values(animes).find(a => a.nombre === nombre);
-                        console.log('Anime encontrado:', anime); // Verificación
-
+                        const anime = Object.values(animes).find(
+                            a => a.nombre.toLowerCase() === nombre.toLowerCase()
+                        );
                         if (anime) {
                             res.writeHead(200, { 'Content-Type': 'application/json' });
                             res.end(JSON.stringify(anime));
@@ -68,14 +70,24 @@ const server = http.createServer(async (req, res) => {
                     }
                     req.on('data', chunk => (body += chunk.toString()));
                     req.on('end', async () => {
-                        const datosActualizados = JSON.parse(body);
-                        const animeActualizado = await actualizarAnime(nombre, datosActualizados);
-                        if (animeActualizado) {
-                            res.writeHead(200, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify(animeActualizado));
-                        } else {
-                            res.writeHead(404, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify({ error: 'Anime no encontrado' }));
+                        try {
+                            const datosActualizados = JSON.parse(body);
+                            if (!datosActualizados.nombre && !datosActualizados.genero && !datosActualizados.año && !datosActualizados.autor) {
+                                res.writeHead(400, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify({ error: 'No se enviaron campos para actualizar' }));
+                                return;
+                            }
+                            const animeActualizado = await actualizarAnime(nombre, datosActualizados);
+                            if (animeActualizado) {
+                                res.writeHead(200, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify(animeActualizado));
+                            } else {
+                                res.writeHead(404, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify({ error: 'Anime no encontrado' }));
+                            }
+                        } catch (error) {
+                            res.writeHead(400, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ error: 'JSON mal formateado' }));
                         }
                     });
                     break;
