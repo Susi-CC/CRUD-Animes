@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import chaiHttp from 'chai-http';
-import { server } from '../index.js'; 
+import { server } from '../index.js';
 //Esto lo debo importar también para que de reconozca el request
 import { request } from 'chai-http';
 
@@ -30,15 +30,15 @@ describe('Pruebas del servidor de Anime', () => {
         const response = await request.execute(server)
             .post('/anime')
             .send({
-                nombre: 'Bleach',
-                genero: 'Shonen',
-                año: '2004',
-                autor: 'Tite Kubo',
+                nombre: 'Sakura Card Captor',
+                genero: 'Shojo',
+                año: '1998',
+                autor: 'CLAMP',
             });
         expect(response).to.have.status(201);
         expect(response.body).to.be.an('object');
         const [id] = Object.keys(response.body);
-        expect(response.body[id]).to.have.property('nombre', 'Bleach');
+        expect(response.body[id]).to.have.property('nombre', 'Sakura Card Captor');
     });
 
     // Prueba: Actualizar un anime por ID
@@ -64,4 +64,39 @@ describe('Pruebas del servidor de Anime', () => {
         expect(response).to.have.status(404);
         expect(response.body).to.have.property('error', 'Anime no encontrado por ID');
     });
+    // Prueba: Obtener un anime por Nombre
+    it('Debería obtener un anime por Nombre', async () => {
+        const response = await request.execute(server).get('/anime/Naruto');
+        expect(response).to.have.status(200);
+        expect(response.body).to.be.an('object');
+        const [id] = Object.keys(response.body);
+        expect(response.body[id]).to.have.property('nombre', 'Naruto');
+    });
+
+    // Prueba: Actualizar un anime por nombre
+    it('Debería actualizar un anime por Nombre', async () => {
+        const response = await request.execute(server)
+            .put('/anime/Naruto')
+            .send({ genero: 'Cyberpunk' });
+        expect(response).to.have.status(200);
+        expect(response.body).to.be.an('object');
+        expect(response.body['4']).to.have.property('genero', 'Cyberpunk');
+    });
+
+    // Prueba: Eliminar un anime por Nombre
+    it('Debería eliminar un anime por ID', async () => {
+        const response = await request.execute(server).delete('/anime/Naruto');
+        expect(response).to.have.status(200);
+        expect(response.body).to.have.property('message', 'Anime eliminado satisfactoriamente');
+    });
+
+    // Prueba: Buscar anime inexistente
+    it('Debería devolver error para anime inexistente', async () => {
+        const response = await request.execute(server).get('/anime/Bleach');
+        expect(response).to.have.status(404);
+        expect(response.body).to.have.property('error', 'Anime no encontrado por nombre');
+    });
+
 });
+
+
