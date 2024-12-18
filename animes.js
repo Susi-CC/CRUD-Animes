@@ -112,7 +112,7 @@ export const eliminarAnimePorId = async (id) => {
         return false;
     }
 
-    // Eliminar el anime del objeto
+    // Eliminar el anime
     delete animes[id];
     await guardarAnimes(animes);
     console.log(`El anime con ID "${id}" se eliminó de manera satisfactoria!!!`);
@@ -130,7 +130,7 @@ export const eliminarAnimePorNombre = async (nombre) => {
         return false;
     }
 
-    // Eliminar el anime del objeto
+    // Eliminar el anime
     delete animes[clave];
     await guardarAnimes(animes);
     console.log(`El anime "${nombre}" se eliminó de manera satisfactoria!!!`);

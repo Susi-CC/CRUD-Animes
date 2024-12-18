@@ -128,11 +128,6 @@ const server = http.createServer(async (req, res) => {
                         res.end(JSON.stringify({ error: 'Anime no encontrado' }));
                     }
                     break;
-
-                default: // Método no permitido
-                    res.writeHead(405, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ error: 'Método no permitido' }));
-                    break;
             }
         } else {
             res.writeHead(404, { 'Content-Type': 'application/json' });
