@@ -1,10 +1,4 @@
 {
-  "1": {
-    "nombre": "Akira",
-    "genero": "Seinen",
-    "año": "1988",
-    "autor": "Katsuhiro Otomo"
-  },
   "2": {
     "nombre": "Dragon Ball",
     "genero": "Shonen",
@@ -28,5 +22,11 @@
     "genero": "Mecha",
     "año": "1995",
     "autor": "Yoshiyuki Sadamoto"
+  },
+  "6": {
+    "nombre": "Bleach",
+    "genero": "Shonen",
+    "año": "2004",
+    "autor": "Tite Kubo"
   }
 }

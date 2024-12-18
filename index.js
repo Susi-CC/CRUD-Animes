@@ -12,7 +12,7 @@ import {
 
 const PORT = 3001;
 
-const server = http.createServer(async (req, res) => {
+export const server = http.createServer(async (req, res) => {
     const { method, url } = req;
     let body = '';
 
