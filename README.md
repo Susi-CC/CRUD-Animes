@@ -13,10 +13,14 @@ El objetivo de la evaluación es demostrar que se poseen los conocimientos de Ja
 ### Estructura del Proyecto
 
 ├── index.js           # Servidor principal
+
 ├── animes.js          # Funciones para la manipulación de los datos
+
 ├── anime.json         # Archivo JSON con los datos de los animes
+
 ├── test
 │   └── anime.test.js  # Pruebas automatizadas con Mocha y Chai
+
 └── package.json       # Configuración del proyecto y dependencias
 
 ### Dependencias
