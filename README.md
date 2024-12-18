@@ -43,11 +43,12 @@ Iniciar el Servidor: Ejecuta el servidor en modo desarrollo con:
 
 El servidor estará disponible en http://localhost:3001.
 
-Realizar Pruebas: Para ejecutar las pruebas automatizadas, usa:
+### Realizar Pruebas: 
+Para ejecutar las pruebas automatizadas, usa:
 
 ##### npm test
 
-#### Estructura de las Rutas:
+### Estructura de las Rutas:
 
     GET /anime: Devuelve todos los animes.
     GET /anime/:id: Busca un anime por su ID.
