@@ -18,18 +18,16 @@ export const server = http.createServer(async (req, res) => {
 
     try {
         if (url.startsWith('/anime')) {
-            const parts = url.split('/'); // Dividir la URL en partes
-            const param = parts[2] ? decodeURIComponent(parts[2]) : null; // Decodificar si hay parámetro
+            const parts = url.split('/'); 
+            const param = parts[2] ? decodeURIComponent(parts[2]) : null; 
 
             switch (method) {
-                case 'GET': // Obtener anime(s)
+                case 'GET': 
                     if (!param) {
-                        // Si no hay parámetro, listar todos los animes
                         const animes = await obtenerAnimes();
                         res.writeHead(200, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify(animes));
                     } else if (!isNaN(param)) {
-                        // Si el parámetro es un número, buscar por ID
                         const anime = await obtenerAnimePorId(param);
                         if (anime) {
                             res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -39,7 +37,6 @@ export const server = http.createServer(async (req, res) => {
                             res.end(JSON.stringify({ error: 'Anime no encontrado por ID' }));
                         }
                     } else {
-                        // Si no es un número, buscar por nombre
                         const anime = await obtenerAnimePorNombre(param);
                         if (anime) {
                             res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -51,7 +48,7 @@ export const server = http.createServer(async (req, res) => {
                     }
                     break;
 
-                case 'POST': // Crear un nuevo anime
+                case 'POST': 
                     req.on('data', chunk => (body += chunk.toString()));
                     req.on('end', async () => {
                         try {
@@ -71,7 +68,7 @@ export const server = http.createServer(async (req, res) => {
                     });
                     break;
 
-                case 'PUT': // Actualizar un anime
+                case 'PUT': 
                     req.on('data', chunk => (body += chunk.toString()));
                     req.on('end', async () => {
                         try {
@@ -83,10 +80,9 @@ export const server = http.createServer(async (req, res) => {
                                 return;
                             }
                             if (!isNaN(param)) {
-                                // Si el parámetro es un número, actualizar por ID
+                                
                                 actualizado = await actualizarAnimePorId(param, camposActualizados);
                             } else {
-                                // Si no es un número, actualizar por nombre
                                 actualizado = await actualizarAnimePorNombre(param, camposActualizados);
                             }
 
@@ -104,7 +100,7 @@ export const server = http.createServer(async (req, res) => {
                     });
                     break;
 
-                case 'DELETE': // Eliminar un anime
+                case 'DELETE': 
                     if (!param) {
                         res.writeHead(400, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({ error: 'Se requiere un ID o nombre' }));
@@ -113,10 +109,8 @@ export const server = http.createServer(async (req, res) => {
 
                     let eliminado;
                     if (!isNaN(param)) {
-                        // Si el parámetro es un número, eliminar por ID
                         eliminado = await eliminarAnimePorId(param);
                     } else {
-                        // Si no es un número, eliminar por nombre
                         eliminado = await eliminarAnimePorNombre(param);
                     }
 
@@ -140,7 +134,6 @@ export const server = http.createServer(async (req, res) => {
     }
 });
 
-// Iniciar el servidor
 server.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
